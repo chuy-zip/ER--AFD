@@ -1,0 +1,10 @@
+__pycache__/
+ast
+nfa
+dfa
+red_dfa
+
+ast.pdf
+nfa.pdf
+dfa.pdf
+red_dfa.pdf
