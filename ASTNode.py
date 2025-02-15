@@ -60,7 +60,7 @@ class AST:
     
     def add_position_to_leaves(self):
 
-        def printLeafNodes(root: ASTNode, pos_counter) -> None:
+        def position_for_node(root: ASTNode, pos_counter) -> None:
 
             # If node is null, return
             if (not root):
@@ -79,16 +79,16 @@ class AST:
             # If left child exists, 
             # check for leaf recursively
             if root.left:
-                printLeafNodes(root.left, pos_counter)
+                position_for_node(root.left, pos_counter)
                 
 
             # If right child exists, 
             # check for leaf recursively
             if root.right:
-                printLeafNodes(root.right, pos_counter)
+                position_for_node(root.right, pos_counter)
             
         position_counter = [1]
-        printLeafNodes(self.root, position_counter)
+        position_for_node(self.root, position_counter)
 
     
     def calculate_AST_nullability(self):
@@ -98,30 +98,39 @@ class AST:
         
         def nullable(node: ASTNode):
             
+            if node is None:
+                return False
+            
+            # Post order
+            left_nullable = nullable(node.left)
+            right_nullable = nullable(node.right)
+        
             if node.value == "ε":
-                print(f"The node with value: {node.value} nullability is {True}")
                 node.isNullable = True
+                print(f"The node with value: {node.value} nullability is {True}")
                 return True
 
             elif node.position != 0:
-                print(f"The node with value: {node.value} nullability is {False}")
                 node.isNullable = False 
+                print(f"The node with value: {node.value} nullability is {False}")
                 return False
 
             elif node.value == "|":
                 # if any of the child nodes is nullable, so is the node that has the | oeprator
-                node.isNullable = True if nullable(node.left) or nullable(node.right) else False
+                node.isNullable = left_nullable or right_nullable
                 print(f"The node with value: {node.value} nullability is {node.isNullable}")
+                return node.isNullable
                 
             
             elif node.value == "~":
                 # if bothe of the childe nodes are nullable, the node with ~ is also nullable
-                node.isNullable = True if nullable(node.left) and nullable(node.right) else False
+                node.isNullable = left_nullable and right_nullable
                 print(f"The node with value: {node.value} nullability is {node.isNullable}")
+                return node.isNullable
 
             elif node.value == "*":
-                print(f"The node with value: {node.value} nullability is {True}")
                 node.isNullable = True
+                print(f"The node with value: {node.value} nullability is {True}")
                 return True
 
         nullable(self.root)
