@@ -65,6 +65,7 @@ while option != expressionsCount:
     print("\nCalculating next pos")
     ast.calculate_AST_nextPos()
 
+    ast.nextPos_table_to_transition_table()
     ast.draw_ast().render('ast', view=True)
 
     #Steps to success

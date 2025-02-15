@@ -14,7 +14,7 @@ class ASTNode:
 
 class AST:
     def __init__(self, postfix_expression: str):
-        self.root = self.postfixToAst(postfix_expression)
+        self.root: ASTNode = self.postfixToAst(postfix_expression)
         self.nextPosTable = {}
         self.alphabet = set()
 
@@ -285,22 +285,92 @@ class AST:
         next_pos(self.root)
         print("Resulting Next Position table:\n", self.nextPosTable)
     
+    def getAlias(sef,transitionTable, positions_compare):
+        for index in transitionTable:
+            item = transitionTable[index]
+            if item["positions"] == positions_compare:
+                return index
+        
+        return ""
+        
     def nextPos_table_to_transition_table(self):
 
-        table = self.nextPosTable
+        # the table format is like this { 1: {'value': 'a', 'nextPos': {1,2,3}, ... }
+        # this means that leaf 1 has a value of a and a nextPos set of {1,2,3}
+        np_table = self.nextPosTable
         # states will have numbers as labels.
         state_counter = 0
+        next_node_counter = 1
 
         # the ransition wil be a dictionary of dictionaries
         # the first key will be the number of the node and the value will be its transitions
-        # so { 0: {a: 2, b: 1}} means state 0, wit A moves to state 2, and with b moves to state 1
+        # so { 0: {positions:{1,2,3} transitions: {a: 2, b: 1} } } means state 0, has the positions {1,2,3} from the ast
+        # and taht with "a" moves to state 2, and with "b" moves to state 1 (POSITIONS and states are not the same)
         transition_table = {}
 
         # where al subsets that we found are stored
-        all_sets = frozenset()
-
+        all_sets = set()
         #to check wich states we already evaluated
-        evaluated_sets = frozenset()
+        evaluated_sets = set()
+
+        # initial state is firstPos of root
+        inital_set = self.root.firstPos
+        all_sets.add(frozenset(inital_set))
+
+        non_evaluated_sets = all_sets - evaluated_sets
+
+        transition_table[state_counter] = {"positions": inital_set, "transitions": {}}
+
+        while non_evaluated_sets != set():
+
+            selected_set = next(iter(non_evaluated_sets))
+
+            # for each letter in the alphabet
+            for char in self.alphabet:
+
+                print(f"Currently testing set {selected_set}, with alphabet: {char}")
+
+                union_sigPos = set()
+
+                for position in selected_set:
+
+                    if np_table[position]["value"] == char:
+                        union_sigPos.update(np_table[position]["nextPos"])
+
+                # now we have to check if said set already exists 
+
+                found_alias = self.getAlias(transition_table, union_sigPos)
+
+                if found_alias == "":
+
+                    print(f"There is no set with positions {union_sigPos}, ({state_counter},{char}) -> {union_sigPos} so we asign = {next_node_counter}")
+                    #add transition to the tstae we are evaluating (1,a) -> 2, on state 1 with a we move to 2 for example
+                    transition_table[state_counter]["positions"] = selected_set
+                    transition_table[state_counter]["transitions"][char] = next_node_counter
+
+                    #adding the newly found set to our set of all sets
+                    all_sets.add(frozenset(union_sigPos))
+                    # now adding it to the transition table
+                    transition_table[next_node_counter] = {"positions": union_sigPos, "transitions": {}}
+                    #adding in case a new set is found
+                    next_node_counter += 1
+                
+                else:
+                    print(f"There is already a set with positions {union_sigPos}, ({state_counter},{char}) -> {union_sigPos} = {found_alias}")
+                    transition_table[state_counter]["transitions"][char] = int(found_alias)
+                
+            evaluated_sets.add(frozenset(selected_set))
+            non_evaluated_sets = all_sets - evaluated_sets
+
+            state_counter += 1
+
+            print("\n")
+
+        print("\nTransition table final:\n", transition_table)
+
+
+
+
 
 
 
