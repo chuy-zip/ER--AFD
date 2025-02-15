@@ -17,6 +17,7 @@ class AST:
         self.root: ASTNode = self.postfixToAst(postfix_expression)
         self.nextPosTable = {}
         self.alphabet = set()
+        self.end_state = 0
 
     def postfixToAst(self, postfix):
         stack = []
@@ -84,7 +85,14 @@ class AST:
                     self.nextPosTable[pos_counter[0]] = {'value': root.value, 'nextPos': set()}
                     pos_counter[0] += 1
 
+                    # also here we adentify the number of the node that has #
+                    if root.value == "#":
+                        self.end_state = root.position
+                    
+
                     print(f"{root.value},{root.position}", end = " ")
+
+                
                 
                 return
 
@@ -103,6 +111,7 @@ class AST:
         position_for_node(self.root, position_counter)
         print("\n\nTable for next pos: \n",self.nextPosTable)
         print("\nAlphabet: ", self.alphabet)
+        print("\nNumber of the state with '#': ", self.end_state)
 
     
     def calculate_AST_nullability(self):
@@ -328,7 +337,7 @@ class AST:
             # for each letter in the alphabet
             for char in self.alphabet:
 
-                print(f"Currently testing set {selected_set}, with alphabet: {char}")
+                print(f"Currently testing set {set(selected_set)}, with alphabet: {char}")
 
                 union_sigPos = set()
 
@@ -343,20 +352,20 @@ class AST:
 
                 if found_alias == "":
 
-                    print(f"There is no set with positions {union_sigPos}, ({state_counter},{char}) -> {union_sigPos} so we asign = {next_node_counter}")
+                    print(f"There is no set with positions {set(union_sigPos)}, ({state_counter},{char}) -> {union_sigPos} so we asign = {next_node_counter}")
                     #add transition to the tstae we are evaluating (1,a) -> 2, on state 1 with a we move to 2 for example
-                    transition_table[state_counter]["positions"] = selected_set
+                    transition_table[state_counter]["positions"] = set(selected_set)
                     transition_table[state_counter]["transitions"][char] = next_node_counter
 
                     #adding the newly found set to our set of all sets
                     all_sets.add(frozenset(union_sigPos))
                     # now adding it to the transition table
-                    transition_table[next_node_counter] = {"positions": union_sigPos, "transitions": {}}
+                    transition_table[next_node_counter] = {"positions": set(union_sigPos), "transitions": {}}
                     #adding in case a new set is found
                     next_node_counter += 1
                 
                 else:
-                    print(f"There is already a set with positions {union_sigPos}, ({state_counter},{char}) -> {union_sigPos} = {found_alias}")
+                    print(f"There is already a set with positions {set(union_sigPos)}, ({state_counter},{char}) -> {union_sigPos} = {found_alias}")
                     transition_table[state_counter]["transitions"][char] = int(found_alias)
                 
             evaluated_sets.add(frozenset(selected_set))
@@ -366,7 +375,20 @@ class AST:
 
             print("\n")
 
-        print("\nTransition table final:\n", transition_table)
+        acceptance_states = set()
+
+        for index, values in transition_table.items():
+            print(index, values)
+
+            for key, value in values.items():
+                
+                if self.end_state in values["positions"]:
+                    print(index, "is acceptance")
+                    acceptance_states.add(index)
+
+                    break
+
+        return transition_table, acceptance_states
 
 
 
