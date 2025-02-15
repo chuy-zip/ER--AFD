@@ -3,8 +3,8 @@ from graphviz import Digraph
 class ASTNode:
     def __init__(self, value: str, left=None, right=None):
         self.value = value
-        self.left = left
-        self.right = right
+        self.left: ASTNode = left
+        self.right: ASTNode = right
         self.isNullable = False
         self.position = 0
         self.firstPos = set()
@@ -74,8 +74,8 @@ class AST:
 
                 root.position = pos_counter[0]
 
-                # This will initialize the table for next pos. So later we dont have to traverse the tree again.
-                self.nextPosTable[pos_counter[0]] = None
+                # Tis will initialize the table for next pos. So later we dont have to traverse the tree again.
+                self.nextPosTable[pos_counter[0]] = set()
                 pos_counter[0] += 1
                 print(f"{root.value},{root.position}", end = " ")
                 
@@ -245,31 +245,36 @@ class AST:
         if self.root is None:
             return
         
-        def first_pos(node: ASTNode):
+        def next_pos(node: ASTNode):
             
             if node is None:
-                return False
+                return
 
-            # Post order
-            left_firstPos: set = first_pos(node.left)
-            right_firstPos: set = first_pos(node.right)
+            # post order traversal will be used now.
+            next_pos(node.left)
+            next_pos(node.right)
             
             if node.value == "~":
 
-                if(node.left.isNullable):
-                    node.firstPos = left_firstPos.union(right_firstPos)
-                    print(f"The node with value: {node.value} has first pos:{ node.firstPos }")
-                    return node.firstPos
-                else:
-                    node.firstPos = left_firstPos
-                    print(f"The node with value: {node.value} has first pos:{ node.firstPos }")
-                    return node.firstPos
+                left_lastPos = node.left.lastPos
+                print(f"\nFound ~ node with left child lastpos: {left_lastPos}")
+
+                for position in left_lastPos:
+                    right_firstPos = node.right.firstPos
+                    print(f"For position {position}, adding set from right child first pos: {right_firstPos}")
+                    self.nextPosTable[position].update(right_firstPos) 
 
             elif node.value == "*":
-                node.firstPos = left_firstPos
-                print(f"The node with value: {node.value} has first pos:{ node.firstPos }")
-                return node.firstPos
-            
-        first_pos(self.root)
+                
+                node_lastPos = node.lastPos
+                print(f"\nFound * node with lastpos: {node.lastPos}")
+
+                for position in node_lastPos:
+                    left_firstPos = node.left.firstPos
+                    print(f"For position {position}, adding set of left child first pos: {left_firstPos}")
+                    self.nextPosTable[position].update(left_firstPos) 
+                    
+        next_pos(self.root)
+        print("Resulting Next Position table:\n", self.nextPosTable)
 
 

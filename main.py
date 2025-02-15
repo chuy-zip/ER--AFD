@@ -50,7 +50,6 @@ while option != expressionsCount:
     selectedNormalReg = normalizedExpressions[option -1]
 
     ast = AST(selected_postfix_expression)
-    ast.draw_ast().render('ast', view=True)
 
     ast.add_position_to_leaves()
 
@@ -63,6 +62,10 @@ while option != expressionsCount:
     print("\nCalculating last pos")
     ast.calculate_AST_lastPos()
 
+    print("\nCalculating next pos")
+    ast.calculate_AST_nextPos()
+
+    ast.draw_ast().render('ast', view=True)
 
     #Steps to success
     # 1. Concatenate # at the end (DONE)
