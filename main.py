@@ -52,6 +52,9 @@ while option != expressionsCount:
     ast = AST(selected_postfix_expression)
     ast.draw_ast().render('ast', view=True)
 
+    ast.add_position_to_leaves()
+    #ast.calculate_AST_nullability()
+
     #Steps to success
     # 1. Concatenate # at the end
     # 2. Create AST
