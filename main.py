@@ -54,11 +54,14 @@ while option != expressionsCount:
 
     ast.add_position_to_leaves()
 
-    print("Calculating nullability")
+    print("\nCalculating nullability")
     ast.calculate_AST_nullability()
 
-    print("Calculating first pos")
+    print("\nCalculating first pos")
     ast.calculate_AST_firstPos()
+
+    print("\nCalculating last pos")
+    ast.calculate_AST_lastPos()
 
 
     #Steps to success
@@ -67,7 +70,7 @@ while option != expressionsCount:
     # 3. Add a number (position) to each leaf node (DONE)
     # 4. Calculate nullability for every node (DONE)
     # 5. Calculate first pos for every node (DONE)
-    # 6. Calculate last pos for every node
+    # 6. Calculate last pos for every node (DONE)
     # 7. Calculate Next pos for every node (when procesing next poss a table should be made)
     # 8. With next pos table make subset construction (construccion de subconjuntos jeje) to make states
     # we will know which are acceptance states if they have the node with the "#"
