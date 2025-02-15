@@ -346,6 +346,13 @@ class AST:
                     if np_table[position]["value"] == char:
                         union_sigPos.update(np_table[position]["nextPos"])
 
+                # Here is the point when a node does not have a transition with letter of the alphabet.
+                # dead states can be implemented here also, but for simplicity of the DFA drawing we are skiping if the 
+                # node does not have transitions with a specific alphabet letter
+                if not union_sigPos:
+                    print(f"No valid transition for ({state_counter},{char}) -> empty set")
+                    continue 
+
                 # now we have to check if said set already exists 
 
                 found_alias = self.getAlias(transition_table, union_sigPos)
