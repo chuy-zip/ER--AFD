@@ -109,8 +109,9 @@ class AST:
                 node.isNullable = True
                 print(f"The node with value: {node.value} nullability is {True}")
                 return True
-
-            elif node.position != 0:
+            
+            # all nodes that are not a leaf have position 0.
+            elif node.position > 0:
                 node.isNullable = False 
                 print(f"The node with value: {node.value} nullability is {False}")
                 return False
@@ -134,5 +135,54 @@ class AST:
                 return True
 
         nullable(self.root)
+
+    def calculate_AST_firstPos(self):
+
+        if self.root is None:
+            return
+        
+        def first_pos(node: ASTNode):
+            
+            if node is None:
+                return False
+            
+            # Post order
+            left_firstPos: set = first_pos(node.left)
+            right_firstPos: set = first_pos(node.right)
+        
+            if node.value == "ε":
+                node.firstPos = set()
+                print(f"The node with value: {node.value} has first pos:{ node.firstPos }")
+
+                
+            # all nodes that are not a leaf have position 0.
+            elif node.position > 0:
+                node.firstPos = set([node.position]) 
+                print(f"The node with value: {node.value} has first pos:{ node.firstPos }")
+                return node.firstPos
+
+            elif node.value == "|":
+                node.firstPos = left_firstPos.union(right_firstPos)
+
+                print(f"The node with value: {node.value} has first pos:{ node.firstPos }")
+                return node.firstPos
+            
+            elif node.value == "~":
+
+                if(node.left.isNullable):
+                    node.firstPos = left_firstPos.union(right_firstPos)
+                    print(f"The node with value: {node.value} has first pos:{ node.firstPos }")
+                    return node.firstPos
+                else:
+                    node.firstPos = left_firstPos
+                    print(f"The node with value: {node.value} has first pos:{ node.firstPos }")
+                    return node.firstPos
+
+            elif node.value == "*":
+                node.firstPos = left_firstPos
+                print(f"The node with value: {node.value} has first pos:{ node.firstPos }")
+                return node.firstPos
+            
+        first_pos(self.root)
 
 

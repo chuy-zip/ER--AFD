@@ -54,16 +54,19 @@ while option != expressionsCount:
 
     ast.add_position_to_leaves()
 
-    print()
+    print("Calculating nullability")
     ast.calculate_AST_nullability()
+
+    print("Calculating first pos")
+    ast.calculate_AST_firstPos()
 
 
     #Steps to success
-    # 1. Concatenate # at the end
-    # 2. Create AST
-    # 3. Add a number (position) to each leaf node
-    # 4. Calculate nullability for every node
-    # 5. Calculate first pos for every node
+    # 1. Concatenate # at the end (DONE)
+    # 2. Create AST (DONE)
+    # 3. Add a number (position) to each leaf node (DONE)
+    # 4. Calculate nullability for every node (DONE)
+    # 5. Calculate first pos for every node (DONE)
     # 6. Calculate last pos for every node
     # 7. Calculate Next pos for every node (when procesing next poss a table should be made)
     # 8. With next pos table make subset construction (construccion de subconjuntos jeje) to make states
