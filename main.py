@@ -74,7 +74,7 @@ while option != expressionsCount:
     # 4. Calculate nullability for every node (DONE)
     # 5. Calculate first pos for every node (DONE)
     # 6. Calculate last pos for every node (DONE)
-    # 7. Calculate Next pos for every node (when procesing next poss a table should be made)
+    # 7. Calculate Next pos for every node (when procesing next poss a table should be made) (DONE)
     # 8. With next pos table make subset construction (construccion de subconjuntos jeje) to make states
     # we will know which are acceptance states if they have the node with the "#"
     # 9. Build the dfa

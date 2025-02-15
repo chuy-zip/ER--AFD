@@ -16,6 +16,7 @@ class AST:
     def __init__(self, postfix_expression: str):
         self.root = self.postfixToAst(postfix_expression)
         self.nextPosTable = {}
+        self.alphabet = set()
 
     def postfixToAst(self, postfix):
         stack = []
@@ -74,10 +75,16 @@ class AST:
 
                 root.position = pos_counter[0]
 
+                if root.value not in ["ε", "*", "|", "~", "#"]:
+                    self.alphabet.update([root.value])
+
                 # Tis will initialize the table for next pos. So later we dont have to traverse the tree again.
-                self.nextPosTable[pos_counter[0]] = set()
-                pos_counter[0] += 1
-                print(f"{root.value},{root.position}", end = " ")
+                if root.value != "ε":
+                    
+                    self.nextPosTable[pos_counter[0]] = {'value': root.value, 'nextPos': set()}
+                    pos_counter[0] += 1
+
+                    print(f"{root.value},{root.position}", end = " ")
                 
                 return
 
@@ -95,6 +102,7 @@ class AST:
         position_counter = [1]
         position_for_node(self.root, position_counter)
         print("\n\nTable for next pos: \n",self.nextPosTable)
+        print("\nAlphabet: ", self.alphabet)
 
     
     def calculate_AST_nullability(self):
@@ -262,7 +270,7 @@ class AST:
                 for position in left_lastPos:
                     right_firstPos = node.right.firstPos
                     print(f"For position {position}, adding set from right child first pos: {right_firstPos}")
-                    self.nextPosTable[position].update(right_firstPos) 
+                    self.nextPosTable[position]["nextPos"].update(right_firstPos) 
 
             elif node.value == "*":
                 
@@ -272,9 +280,28 @@ class AST:
                 for position in node_lastPos:
                     left_firstPos = node.left.firstPos
                     print(f"For position {position}, adding set of left child first pos: {left_firstPos}")
-                    self.nextPosTable[position].update(left_firstPos) 
+                    self.nextPosTable[position]["nextPos"].update(left_firstPos) 
                     
         next_pos(self.root)
         print("Resulting Next Position table:\n", self.nextPosTable)
+    
+    def nextPos_table_to_transition_table(self):
+
+        table = self.nextPosTable
+        # states will have numbers as labels.
+        state_counter = 0
+
+        # the ransition wil be a dictionary of dictionaries
+        # the first key will be the number of the node and the value will be its transitions
+        # so { 0: {a: 2, b: 1}} means state 0, wit A moves to state 2, and with b moves to state 1
+        transition_table = {}
+
+        # where al subsets that we found are stored
+        all_sets = frozenset()
+
+        #to check wich states we already evaluated
+        evaluated_sets = frozenset()
+
+
 
 
