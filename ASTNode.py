@@ -7,13 +7,15 @@ class ASTNode:
         self.right = right
         self.isNullable = False
         self.position = 0
-        self.firstPos = {}
-        self.lastPos = {}
-        self.NextPos = {}
+        self.firstPos = set()
+        self.lastPos = set()
+        self.nextPos = set()
+        
 
 class AST:
     def __init__(self, postfix_expression: str):
         self.root = self.postfixToAst(postfix_expression)
+        self.nextPosTable = {}
 
     def postfixToAst(self, postfix):
         stack = []
@@ -71,6 +73,9 @@ class AST:
             if (not root.left and not root.right):
 
                 root.position = pos_counter[0]
+
+                # This will initialize the table for next pos. So later we dont have to traverse the tree again.
+                self.nextPosTable[pos_counter[0]] = None
                 pos_counter[0] += 1
                 print(f"{root.value},{root.position}", end = " ")
                 
@@ -89,6 +94,7 @@ class AST:
             
         position_counter = [1]
         position_for_node(self.root, position_counter)
+        print("\n\nTable for next pos: \n",self.nextPosTable)
 
     
     def calculate_AST_nullability(self):
@@ -135,56 +141,7 @@ class AST:
                 return True
 
         nullable(self.root)
-
-    def calculate_AST_lastPos(self):
-
-        if self.root is None:
-            return
-        
-        def last_pos(node: ASTNode):
-            
-            if node is None:
-                return False
-            
-            # Post order
-            left_lastPos: set = last_pos(node.left)
-            right_lastPos: set = last_pos(node.right)
-        
-            if node.value == "ε":
-                node.firstPos = set()
-                print(f"The node with value: {node.value} has last pos:{ node.firstPos }")
-
-                
-            # all nodes that are not a leaf have position 0.
-            elif node.position > 0:
-                node.firstPos = set([node.position]) 
-                print(f"The node with value: {node.value} has last pos:{ node.firstPos }")
-                return node.firstPos
-
-            elif node.value == "|":
-                node.firstPos = left_lastPos.union(right_lastPos)
-
-                print(f"The node with value: {node.value} has last pos:{ node.firstPos }")
-                return node.firstPos
-            
-            elif node.value == "~":
-
-                if(node.right.isNullable):
-                    node.firstPos = left_lastPos.union(right_lastPos)
-                    print(f"The node with value: {node.value} has last pos:{ node.firstPos }")
-                    return node.firstPos
-                else:
-                    node.firstPos = right_lastPos
-                    print(f"The node with value: {node.value} has last pos:{ node.firstPos }")
-                    return node.firstPos
-
-            elif node.value == "*":
-                node.firstPos = left_lastPos
-                print(f"The node with value: {node.value} has last pos:{ node.firstPos }")
-                return node.firstPos
-            
-        last_pos(self.root)
-
+    
     def calculate_AST_firstPos(self):
 
         if self.root is None:
@@ -193,7 +150,7 @@ class AST:
         def first_pos(node: ASTNode):
             
             if node is None:
-                return False
+                return set()
             
             # Post order
             left_firstPos: set = first_pos(node.left)
@@ -202,7 +159,7 @@ class AST:
             if node.value == "ε":
                 node.firstPos = set()
                 print(f"The node with value: {node.value} has first pos:{ node.firstPos }")
-
+                return node.firstPos
                 
             # all nodes that are not a leaf have position 0.
             elif node.position > 0:
@@ -217,6 +174,87 @@ class AST:
                 return node.firstPos
             
             elif node.value == "~":
+
+                if(node.left.isNullable):
+                    node.firstPos = left_firstPos.union(right_firstPos)
+                    print(f"The node with value: {node.value} has first pos:{ node.firstPos }")
+                    return node.firstPos
+                else:
+                    node.firstPos = left_firstPos
+                    print(f"The node with value: {node.value} has first pos:{ node.firstPos }")
+                    return node.firstPos
+
+            elif node.value == "*":
+                node.firstPos = left_firstPos
+                print(f"The node with value: {node.value} has first pos:{ node.firstPos }")
+                return node.firstPos
+            
+        first_pos(self.root)
+
+    def calculate_AST_lastPos(self):
+
+        if self.root is None:
+            return
+        
+        def last_pos(node: ASTNode):
+            
+            if node is None:
+                return set()
+            
+            # Post order
+            left_lastPos: set = last_pos(node.left)
+            right_lastPos: set = last_pos(node.right)
+        
+            if node.value == "ε":
+                node.lastPos = set()
+                print(f"The node with value: {node.value} has last pos:{ node.lastPos }")
+                return node.lastPos
+                
+            # all nodes that are not a leaf have position 0.
+            elif node.position > 0:
+                node.lastPos = set([node.position]) 
+                print(f"The node with value: {node.value} has last pos:{ node.lastPos }")
+                return node.lastPos
+
+            elif node.value == "|":
+                node.lastPos = left_lastPos.union(right_lastPos)
+
+                print(f"The node with value: {node.value} has last pos:{ node.lastPos }")
+                return node.lastPos
+            
+            elif node.value == "~":
+
+                if(node.right.isNullable):
+                    node.lastPos = left_lastPos.union(right_lastPos)
+                    print(f"The node with value: {node.value} has last pos:{ node.lastPos }")
+                    return node.lastPos
+                else:
+                    node.lastPos = right_lastPos
+                    print(f"The node with value: {node.value} has last pos:{ node.lastPos }")
+                    return node.lastPos
+
+            elif node.value == "*":
+                node.lastPos = left_lastPos
+                print(f"The node with value: {node.value} has last pos:{ node.lastPos }")
+                return node.lastPos
+            
+        last_pos(self.root)
+
+    def calculate_AST_nextPos(self):
+
+        if self.root is None:
+            return
+        
+        def first_pos(node: ASTNode):
+            
+            if node is None:
+                return False
+
+            # Post order
+            left_firstPos: set = first_pos(node.left)
+            right_firstPos: set = first_pos(node.right)
+            
+            if node.value == "~":
 
                 if(node.left.isNullable):
                     node.firstPos = left_firstPos.union(right_firstPos)
