@@ -14,7 +14,7 @@ class AST:
         stack = []
 
         for char in postfix:
-            if char.isalnum() or char == "ε":
+            if char.isalnum() or char == "ε" or char == "#":
                 node = ASTNode(char)
                 stack.append(node)
                 print(f"Found {char}, pushing symbol to the stack")

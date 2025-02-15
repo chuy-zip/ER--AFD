@@ -217,7 +217,8 @@ def getPostfixExpressionsFromFile(file):
             exp = exp.replace(" ", "")
 
             if expressionIsBalanced(exp):
-                normalizedExp.append(normalizeRegex(exp))
+                #its necesarry to concatenate the # at the end firs before starting to process the regex
+                normalizedExp.append(normalizeRegex(exp+"#"))
 
 
     print("Infix a Postfix: \n")
@@ -225,8 +226,10 @@ def getPostfixExpressionsFromFile(file):
     for expression in normalizedExp:
         print("Normalized: ", expression)
         formatted = formatRegEx(expression)
+
         print("Formated: ", formatted)
         postfixString = infixToPostfix(formatted)
+
         print("Result: ", postfixString)
         print("\n")
         postfixExpressions.append(postfixString)
