@@ -1,4 +1,5 @@
 from translator import getPostfixExpressionsFromFile
+from ASTNode import AST
 
 def getOriginalExpressions(file):
     expressionList = []
@@ -40,3 +41,13 @@ while option != expressionsCount:
             print(f"{idx + 1}. {exp}")
             
     option = int(input())
+
+    if len(postfixExpressions) == option:
+        break
+
+    selected_postfix_expression = postfixExpressions[option - 1]
+    selectedRegex = expressions[option -1]
+    selectedNormalReg = normalizedExpressions[option -1]
+
+    ast = AST(selected_postfix_expression)
+    ast.draw_ast().render('ast', view=True)
