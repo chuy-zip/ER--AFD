@@ -71,16 +71,3 @@ while option != expressionsCount:
     print("\nAcceptance states: ", acceptance_states)
 
     ast.draw_ast().render('ast', view=True)
-
-    #Steps to success
-    # 1. Concatenate # at the end (DONE)
-    # 2. Create AST (DONE)
-    # 3. Add a number (position) to each leaf node (DONE)
-    # 4. Calculate nullability for every node (DONE)
-    # 5. Calculate first pos for every node (DONE)
-    # 6. Calculate last pos for every node (DONE)
-    # 7. Calculate Next pos for every node (when procesing next poss a table should be made) (DONE)
-    # 8. With next pos table make subset construction (construccion de subconjuntos jeje) to make states
-    # we will know which are acceptance states if they have the node with the "#"
-    # 9. Build the dfa
-    # 10. Minimize the DFA
