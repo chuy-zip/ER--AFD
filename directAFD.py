@@ -182,7 +182,7 @@ class DFA:
         return False
 
 
-    def draw_dfa(self, filename='dfa'):
+    def draw_dfa(self, filename):
         dot = Digraph()
         state_mapping = {}  # To map state numbers to node names in the Graphviz diagram
 

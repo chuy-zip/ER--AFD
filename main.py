@@ -75,10 +75,10 @@ while option != expressionsCount:
     ast.draw_ast().render('ast', view=True)
 
     dfa = DFA(transition_table, acceptance_states, ast.alphabet)
-    dfa.draw_dfa()
+    dfa.draw_dfa('dfa')
     min_dfa = copy.deepcopy(dfa) 
     mdfa = min_dfa.minimize()
-    mdfa.draw_dfa()
+    mdfa.draw_dfa('min_dfa')
     test_string = input("Enter a string to test: ")
     if dfa.verifyString(test_string):
         print("Accepted!")

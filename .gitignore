@@ -2,6 +2,7 @@ __pycache__/
 ast
 nfa
 dfa
-red_dfa
+min_dfa
+
 
 *.pdf
