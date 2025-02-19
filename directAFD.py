@@ -74,7 +74,8 @@ class DFA:
         non_accepting = [s for s in all_states if s not in accept_states]
         if non_accepting:
             partitions.append(non_accepting)
-    
+        if accept_states:
+            partitions.append(list(accept_states))  
         # Obtener el alfabeto (símbolos) usado en las transiciones
         all_chars = sorted(list(set(char for (_, char) in transitions.keys())))
     
@@ -104,8 +105,7 @@ class DFA:
             if len(new_partitions) == len(partitions):
                 break
             partitions = new_partitions
-        if accept_states:
-            partitions.append(list(accept_states)) 
+
         # Asignar nuevos nombres a los estados de acuerdo a la partición
         new_state_mapping = {}
         new_id = 0
