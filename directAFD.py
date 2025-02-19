@@ -13,9 +13,19 @@ class DFA:
         self.states = {}
         self.start_state = None
         self.final_states = set()
-        self.transition_table = transition_table
+        self.transition_table = self._clean_transition_table(transition_table)
         self.acceptance_states = acceptance_states
         self._construct_dfa()
+
+    def _clean_transition_table(self, transition_table):
+        cleaned_table = {}
+        for state_id, data in transition_table.items():
+            cleaned_table[state_id] = {
+                "transitions": {symbol: next(iter(target)) if isinstance(target, set) else target 
+                                for symbol, target in data["transitions"].items()}
+            }
+        print("Cleaned table: ", cleaned_table)
+        return cleaned_table
 
     def _construct_dfa(self):
         for state_id in self.transition_table:
@@ -29,10 +39,11 @@ class DFA:
         
         for state_id, transitions in self.transition_table.items():
             for symbol, target_id in transitions["transitions"].items():
-                if isinstance(target_id, set):  # Si target_id es un conjunto, tomamos un único estado
-                    target_id = next(iter(target_id))  # Selecciona un elemento arbitrario del conjunto
-
+                if isinstance(target_id, set):  # Ensure target_id is a single value
+                    target_id = next(iter(target_id))
                 self.states[state_id].transitions[symbol] = self.states.get(target_id, None)
+        for state in self.states.values():
+            print(state, state.state_number, state.transitions, state.is_final)
 
 
     def verifyString(self, w):
@@ -90,8 +101,8 @@ class DFA:
         # Add edges for transitions
         for state_alias, transitions in self.transition_table.items():
             state_name = state_mapping[state_alias]
-            for symbol, target_state in transitions.items():
-                if target_state != " ":
+            for symbol, target_state in transitions["transitions"].items():
+                if target_state != " ":  
                     target_state_name = state_mapping[target_state]
                     dot.edge(state_name, target_state_name, label=symbol)
 
