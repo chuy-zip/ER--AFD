@@ -9,12 +9,13 @@ class AFDState:
         return f"State({self.state_number})"
 
 class DFA:
-    def __init__(self, transition_table, acceptance_states):
+    def __init__(self, transition_table, acceptance_states, alphabet):
         self.states = {}
         self.start_state = None
         self.final_states = set()
         self.transition_table = self._clean_transition_table(transition_table)
         self.acceptance_states = acceptance_states
+        self.alphabet = alphabet
         self._construct_dfa()
 
     def _clean_transition_table(self, transition_table):
@@ -45,6 +46,102 @@ class DFA:
         for state in self.states.values():
             print(state, state.state_number, state.transitions, state.is_final)
 
+    def get_transitions(self):
+        transitions = {}
+        for state in self.states.values():
+            state_num = state.state_number
+            for char, target in state.transitions.items():
+                if target is not None:
+                    transitions[(state_num, char)] = target.state_number
+        return transitions
+
+    def get_start_state(self):
+        return self.start_state.state_number if self.start_state else None
+
+    def get_accept_states(self):
+        return {state.state_number for state in self.final_states}
+
+    def minimize(self):
+
+        # Extraer la información necesaria
+        transitions = self.get_transitions()         # Diccionario con claves: (estado, símbolo) -> estado destino
+        start = self.get_start_state()                 # Estado inicial (número)
+        accept_states = self.get_accept_states()       # Conjunto de estados aceptantes (números)
+        all_states = list(self.states.keys())          # Lista de todos los estados del DFA
+    
+        # Inicializar la partición π₀: se separan los estados no aceptantes y aceptantes
+        partitions = []
+        non_accepting = [s for s in all_states if s not in accept_states]
+        if non_accepting:
+            partitions.append(non_accepting)
+    
+        # Obtener el alfabeto (símbolos) usado en las transiciones
+        all_chars = sorted(list(set(char for (_, char) in transitions.keys())))
+    
+        # Refinamiento iterativo de las particiones
+        while True:
+            new_partitions = []
+            for subset in partitions:
+                group = {}  # Agrupar estados por su "firma" de transiciones
+                for state in subset:
+                    key = []
+                    for char in all_chars:
+                        if (state, char) in transitions:
+                            dest = transitions[(state, char)]
+                            # Buscar a qué partición pertenece 'dest'
+                            index_dest = -1
+                            for i, part in enumerate(partitions):
+                                if dest in part:
+                                    index_dest = i
+                                    break
+                            key.append(index_dest)
+                        else:
+                            key.append(-1)  # No existe transición para este símbolo
+                    key = tuple(key)
+                    group.setdefault(key, []).append(state)
+                new_partitions.extend(list(group.values()))
+            # Si la partición no cambió, hemos alcanzado la estabilidad
+            if len(new_partitions) == len(partitions):
+                break
+            partitions = new_partitions
+        if accept_states:
+            partitions.append(list(accept_states)) 
+        # Asignar nuevos nombres a los estados de acuerdo a la partición
+        new_state_mapping = {}
+        new_id = 0
+        # Se asigna el 0 a la partición que contiene al estado inicial
+        for part in partitions:
+            if start in part:
+                for s in part:
+                    new_state_mapping[s] = 0
+                break
+        # Asignar identificadores a las demás particiones
+        for part in partitions:
+            if start not in part:
+                new_id += 1
+                for s in part:
+                    new_state_mapping[s] = new_id
+    
+        # Reconstruir la tabla de transiciones para el DFA minimizado
+        new_transition_table = {}
+        for (state, char), dest in transitions.items():
+            new_src = new_state_mapping[state]
+            new_dest = new_state_mapping[dest]
+            if new_src not in new_transition_table:
+                new_transition_table[new_src] = {"transitions": {}}
+            new_transition_table[new_src]["transitions"][char] = new_dest
+    
+        # Asegurarse de que cada estado nuevo tenga una entrada en la tabla de transiciones
+        for s in set(new_state_mapping.values()):
+            if s not in new_transition_table:
+                new_transition_table[s] = {"transitions": {}}
+    
+        # Definir los nuevos estados de aceptación y el estado inicial
+        new_accept = set(new_state_mapping[s] for s in accept_states)
+        new_start = new_state_mapping[start]
+    
+        # Retornar un nuevo DFA construido con la tabla minimizada, los estados aceptantes y el alfabeto original
+        return DFA(new_transition_table, new_accept, self.alphabet)
 
     def verifyString(self, w):
 

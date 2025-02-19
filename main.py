@@ -1,6 +1,7 @@
 from translator import getPostfixExpressionsFromFile
 from directAFD import DFA
 from ASTNode import AST
+import copy
 
 def getOriginalExpressions(file):
     expressionList = []
@@ -73,12 +74,13 @@ while option != expressionsCount:
 
     ast.draw_ast().render('ast', view=True)
 
-    dfa = DFA(transition_table, acceptance_states)
-
+    dfa = DFA(transition_table, acceptance_states, ast.alphabet)
+    dfa.draw_dfa()
+    min_dfa = copy.deepcopy(dfa) 
+    mdfa = min_dfa.minimize()
+    mdfa.draw_dfa()
     test_string = input("Enter a string to test: ")
     if dfa.verifyString(test_string):
         print("Accepted!")
     else:
         print("Rejected!")
-        
-    dfa.draw_dfa()
