@@ -1,17 +1,39 @@
 from graphviz import Digraph
 
 class AFDState:
-    def __init__(self, state_name):
-        self.state_name = state_name
-        self.isFinal = False
+    def __init__(self, state_number):
+        self.state_number = state_number
+        self.is_final = False
         self.transitions = {}
+    def __repr__(self):
+        return f"State({self.state_number})"
 
 class DFA:
-    def __init__(self, start_state, final_states, transition_table):
-        self.start_state = start_state  # This is a State object
-        self.final_states = final_states  # Set of State objects
-        self.transition_table = transition_table  # Simplified transition table with aliases
-        self.valid_symbols = list(next(iter(transition_table.values())).keys())  # Symbols used in transitions
+    def __init__(self, transition_table, acceptance_states):
+        self.states = {}
+        self.start_state = None
+        self.final_states = set()
+        self.transition_table = transition_table
+        self.acceptance_states = acceptance_states
+        self._construct_dfa()
+
+    def _construct_dfa(self):
+        for state_id in self.transition_table:
+            state = AFDState(state_id)
+            if state_id in self.acceptance_states:
+                state.is_final = True
+                self.final_states.add(state)
+            self.states[state_id] = state
+            
+        self.start_state = self.states[0]  # Assumption: initial state is always 0
+        
+        for state_id, transitions in self.transition_table.items():
+            for symbol, target_id in transitions["transitions"].items():
+                if isinstance(target_id, set):  # Si target_id es un conjunto, tomamos un único estado
+                    target_id = next(iter(target_id))  # Selecciona un elemento arbitrario del conjunto
+
+                self.states[state_id].transitions[symbol] = self.states.get(target_id, None)
+
 
     def verifyString(self, w):
 
@@ -36,7 +58,7 @@ class DFA:
 
             elif char in currentStateCharTransitions:
                 print(f"{currentState} has transition with: {char}")
-                currentState = next(iter(currentTransitions[char]))
+                currentState = currentTransitions[char]
                 print("Transitioning to state: ", currentState)
                 currentTransitions = currentState.transitions
             
@@ -82,5 +104,6 @@ class DFA:
         # Render the DFA to a file
         dot.render(filename, view=True)
 
-    
-    
+
+__all__ = ["DFA"]
+
